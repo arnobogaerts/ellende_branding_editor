@@ -9,12 +9,13 @@
       <p>[23/05/2025] Ellende@Stelplaats w/ Sueuga, BOLT RUIN, b–ke</p>
       <p>[22/11/2025] LAB. Ellende</p>
       <br/>
-      <p>DISK:USER >_</p>
+      <p>DISK:USER >&nbsp;<BlinkingCursor/></p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import BlinkingCursor from './BlinkingCursor.vue';
 import TitleBar from './TitleBar.vue';
 </script>
 

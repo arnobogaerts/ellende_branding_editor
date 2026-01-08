@@ -24,10 +24,10 @@
   border: var(--border-size-default) solid var(--text-color);
   display: flex;
   flex-direction: row;
-  width: fit-content;
 }
 .column {
   padding: var(--padding-default);
+  min-width: fit-content;
 }
 .column:first-child,
 .column:nth-child(2) {

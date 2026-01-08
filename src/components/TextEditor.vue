@@ -9,7 +9,7 @@
         Ellende delivers a raw, dark, and mysterious sound, balancing danceability with a
         thought-provoking edge.
       </p>
-      <p>_</p>
+      <BlinkingCursor/>
     </div>
     <div class="note-information">
       <p class="character-count">{{ wordCount }} words</p>
@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import TitleBar from './TitleBar.vue';
 import { ref, onMounted } from 'vue';
+import BlinkingCursor from './BlinkingCursor.vue';
 
 const noteRef = ref<HTMLElement | null>(null);
 const wordCount = ref(0);

@@ -12,6 +12,8 @@ import SystemUsers from '@/components/SystemUsers.vue';
 import TitleBig from '@/components/TitleBig.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import ConsoleWindow from '@/components/ConsoleWindow.vue';
+import FileCopy from '@/components/FileCopy.vue';
+import TextEditorTypeGlitch from '@/components/TextEditorTypeGlitch.vue';
 
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -26,7 +28,9 @@ const components = [
   SystemInformation,
   ImageViewer,
   TextEditor,
-  ConsoleWindow
+  ConsoleWindow,
+  FileCopy,
+  TextEditorTypeGlitch
 ];
 
 interface PositionedComponent {
