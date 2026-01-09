@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import BlinkingCursor from './BlinkingCursor.vue';
+import BlinkingCursor from './BlinkingText.vue';
 import TitleBar from './TitleBar.vue';
 </script>
 

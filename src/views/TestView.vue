@@ -14,6 +14,10 @@ import TextEditor from '@/components/TextEditor.vue';
 import ConsoleWindow from '@/components/ConsoleWindow.vue';
 import FileCopy from '@/components/FileCopy.vue';
 import TextEditorTypeGlitch from '@/components/TextEditorTypeGlitch.vue';
+import PornWindow1 from '@/components/PornWindow1.vue';
+import PornWindow2 from '@/components/PornWindow2.vue';
+import TaskManager from '@/components/TaskManager.vue';
+import TextEditorSaferSpaceTEMP from '@/components/TextEditorSaferSpaceTEMP.vue';
 
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -30,7 +34,11 @@ const components = [
   TextEditor,
   ConsoleWindow,
   FileCopy,
-  TextEditorTypeGlitch
+  TextEditorTypeGlitch,
+  PornWindow1,
+  PornWindow2,
+  TaskManager,
+  TextEditorSaferSpaceTEMP
 ];
 
 interface PositionedComponent {

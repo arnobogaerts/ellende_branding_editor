@@ -2,14 +2,19 @@
   <div class="drag-window" v-draggable>
     <TitleBar>Text Editor</TitleBar>
     <div class="note-title">
-      <p><b>Vision.txt</b></p>
+      <p><b>Safer_Space.txt</b></p>
     </div>
     <div class="container">
       <p ref="noteRef">
-        Ellende delivers a raw, dark, and mysterious sound, balancing danceability with a
-        thought-provoking edge.
+        - Zero tolerance for discrimination or hate speech.<br />
+        - Illegal drugs are not allowed.<br />
+        - Consent is key.<br />
+        - Look out for each other.<br />
+        - Speak up or seek help.<br />
+        - Respect privacy.<br />
+        - Everyone is welcome.
       </p>
-      <BlinkingText/>
+      <BlinkingText />
     </div>
     <div class="note-information">
       <p class="character-count">{{ wordCount }} words</p>
@@ -41,14 +46,16 @@ onMounted(() => {
   width: fit-content;
   box-sizing: border-box;
   padding: var(--padding-default);
-  max-width: 350px;
+  max-width: fit-content;
 }
+
 .note-title {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
   border-bottom: none;
   padding: var(--padding-default);
 }
+
 .note-information {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);

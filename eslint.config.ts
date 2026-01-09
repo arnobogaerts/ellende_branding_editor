@@ -1,7 +1,7 @@
-import { globalIgnores } from 'eslint/config'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginVue from 'eslint-plugin-vue'
-import prettierConfig from 'eslint-config-prettier'
+import { globalIgnores } from 'eslint/config';
+import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
+import pluginVue from 'eslint-plugin-vue';
+import prettierConfig from 'eslint-config-prettier';
 
 export default defineConfigWithVueTs(
   {
@@ -15,6 +15,6 @@ export default defineConfigWithVueTs(
   {
     rules: {
       'vue/multi-word-component-names': 'off',
-    }
+    },
   }
-)
+);

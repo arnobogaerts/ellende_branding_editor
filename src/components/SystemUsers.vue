@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue';
 import TitleBar from './TitleBar.vue';
-import BlinkingCursor from './BlinkingCursor.vue';
+import BlinkingText from './BlinkingText.vue';
 
 const containerRef = ref<HTMLElement | null>(null);
 const profilesRef = ref<HTMLElement | null>(null);
@@ -19,7 +19,7 @@ onMounted(async () => {
     <TitleBar>System Users</TitleBar>
     <div class="container" ref="containerRef">
       <div class="field">
-        <p>get &lt;artist&gt;*<BlinkingCursor /></p>
+        <p>get &lt;artist&gt;*<BlinkingText /></p>
       </div>
       <div class="field profiles" ref="profilesRef">
         <p class="profile">[profile]&lt;artist&gt;Berlinde Deman & Mirko Banovic</p>

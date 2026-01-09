@@ -9,7 +9,7 @@
     <div class="container">
       <p ref="noteRef">
         <span ref="typedSpan"></span>
-      <BlinkingCursor />
+      <BlinkingText text="_" />
       </p>
     </div>
 
@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import TitleBar from './TitleBar.vue'
-import BlinkingCursor from './BlinkingCursor.vue'
+import BlinkingText from './BlinkingText.vue'
 
 const typedSpan = ref<HTMLElement | null>(null)
 const wordCountSpan = ref<HTMLElement | null>(null)

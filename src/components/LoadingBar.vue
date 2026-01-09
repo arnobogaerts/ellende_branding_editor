@@ -33,7 +33,7 @@ let interval: number
 
 onMounted(() => {
   interval = window.setInterval(() => {
-    blocks.value = (blocks.value + 1) % 13
+    blocks.value = (blocks.value + 1) % 19
   }, 1000)
 })
 
