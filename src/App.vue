@@ -1,5 +1,5 @@
 <template>
-  <div class="dot-bg">
+  <div>
     <router-view />
   </div>
 </template>

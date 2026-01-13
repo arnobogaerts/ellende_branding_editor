@@ -6,11 +6,7 @@
       <p>2026</p>
     </div>
     <div class="days">
-      <p
-        v-for="(day, i) in days"
-        :key="i"
-        :class="{ highlight: day.currentMonth && day.value === highlightDay }"
-      >
+      <p v-for="(day, i) in days" :key="i" :class="{ highlight: day.currentMonth && day.value === highlightDay }">
         {{ day.value }}
       </p>
     </div>
@@ -31,6 +27,7 @@
   height: 40px;
   width: calc(7 * 40px + 6 * var(--border-size-default) + 4px);
 }
+
 .days {
   display: grid;
   grid-template-columns: repeat(7, 40px);
@@ -40,12 +37,14 @@
   border: var(--border-size-default) solid var(--text-color);
   width: calc(7 * 40px + 6 * var(--border-size-default));
 }
+
 .days p {
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--background-color);
 }
+
 .days p.highlight {
   background: var(--text-color);
   color: var(--background-color);
@@ -54,11 +53,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import TitleBar from './TitleBar.vue';
+import TitleBar from './templates/TitleBar.vue';
 
 interface Day {
-  value: number;
-  currentMonth: boolean;
+  value?: number;
+  currentMonth?: boolean;
 }
 
 const year = 2026;

@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import TitleBar from './TitleBar.vue';
+import TitleBar from './templates/TitleBar.vue';
 </script>
 
 <style scoped>
@@ -26,6 +26,7 @@ import TitleBar from './TitleBar.vue';
   border: var(--border-size-default) solid var(--text-color);
   width: 350px;
 }
+
 .information {
   box-sizing: border-box;
   display: flex;
@@ -34,6 +35,7 @@ import TitleBar from './TitleBar.vue';
   align-items: center;
   height: 200px;
 }
+
 .copyright {
   border-top: var(--border-size-default) solid var(--text-color);
   display: flex;

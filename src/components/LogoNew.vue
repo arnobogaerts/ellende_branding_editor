@@ -1,14 +1,14 @@
 <template>
   <div class="drag-window" v-draggable>
-    <TitleBar>Image Viewer</TitleBar>
+    <TitleBar>Logo</TitleBar>
     <div class="container">
-      <img src="/public/images/cushion.png" alt="" />
+      <img src="/public/images/ellende_logo.png" alt="" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import TitleBar from './TitleBar.vue';
+import TitleBar from './templates/TitleBar.vue';
 </script>
 
 <style scoped>
@@ -19,6 +19,7 @@ import TitleBar from './TitleBar.vue';
   box-sizing: border-box;
   padding: 15px;
 }
+
 .container img {
   width: 150px;
 }

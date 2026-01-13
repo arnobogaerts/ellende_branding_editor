@@ -2,14 +2,15 @@
   <div class="drag-window" v-draggable>
     <TitleBar>Text Editor</TitleBar>
     <div class="note-title">
-      <p><b>Vision.txt</b></p>
+      <p><b>{{ displayTitle }}.txt</b></p>
     </div>
-    <div class="container">
+    <div class="container" :style="{ width }">
       <p ref="noteRef">
-        Ellende delivers a raw, dark, and mysterious sound, balancing danceability with a
-        thought-provoking edge.
+        <slot name="text">{{ displayText }}</slot>
       </p>
-      <BlinkingText/>
+      <BlinkingText>
+        <p>_</p>
+      </BlinkingText>
     </div>
     <div class="note-information">
       <p class="character-count">{{ wordCount }} words</p>
@@ -21,6 +22,15 @@
 import TitleBar from './TitleBar.vue';
 import { ref, onMounted } from 'vue';
 import BlinkingText from './BlinkingText.vue';
+
+const props = defineProps<{
+  title?: string
+  text?: string
+  width?: string
+}>()
+
+const displayTitle = props.title || 'Title'
+const displayText = props.text || 'Content'
 
 const noteRef = ref<HTMLElement | null>(null);
 const wordCount = ref(0);
@@ -41,14 +51,16 @@ onMounted(() => {
   width: fit-content;
   box-sizing: border-box;
   padding: var(--padding-default);
-  max-width: 350px;
+  min-width: 200px;
 }
+
 .note-title {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
   border-bottom: none;
   padding: var(--padding-default);
 }
+
 .note-information {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);

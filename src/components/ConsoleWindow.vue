@@ -8,15 +8,17 @@
       <p>[11/04/2025] Café AperO</p>
       <p>[23/05/2025] Ellende@Stelplaats w/ Sueuga, BOLT RUIN, b–ke</p>
       <p>[22/11/2025] LAB. Ellende</p>
-      <br/>
-      <p>DISK:USER >&nbsp;<BlinkingCursor/></p>
+      <br />
+      <p>DISK:USER >&nbsp;
+        <BlinkingCursor />
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import BlinkingCursor from './BlinkingText.vue';
-import TitleBar from './TitleBar.vue';
+import BlinkingCursor from './templates/BlinkingText.vue';
+import TitleBar from './templates/TitleBar.vue';
 </script>
 
 <style scoped>

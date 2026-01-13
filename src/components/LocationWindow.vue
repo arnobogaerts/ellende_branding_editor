@@ -25,10 +25,12 @@
   display: flex;
   flex-direction: row;
 }
+
 .column {
   padding: var(--padding-default);
   min-width: fit-content;
 }
+
 .column:first-child,
 .column:nth-child(2) {
   border-right: var(--border-size-default) solid var(--text-color);
@@ -36,8 +38,8 @@
 </style>
 
 <script setup lang="ts">
-import TitleBar from './TitleBar.vue';
+import TitleBar from './templates/TitleBar.vue';
 
 const x = 10;
-for (let i = 0; i < x; i++) {}
+for (let i = 0; i < x; i++) { }
 </script>

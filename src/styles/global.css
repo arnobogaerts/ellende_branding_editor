@@ -4,13 +4,15 @@
   --font-default: 'lores-12', sans-serif;
   --font-size-default: 12pt;
   --font-weight-default: 400;
-  --font-size-subtitle: calc(var(--font-size-default) * 2);
+  --font-size-subtitle: calc(var(--font-size-default) * 1.618);
+  --font-weight-subtitle: bold;
 
   --text-color: #111111;
   --background-color: #fefdf9;
   --background-color-alt: #e1e1e1;
 
   --border-size-default: 3px;
+  --border-size-thin: 2px;
   --padding-default: 2px 5px;
 
   --cursor-default: url('cursors/normal.cur'), auto;
@@ -30,6 +32,13 @@ body {
   cursor: var(--cursor-default);
 }
 
+hr.horizontal {
+  width: 100%;
+  height: var(--border-size-thin);
+  border: none;
+  background-color: var(--text-color);
+}
+
 p,
 h1,
 h2,
@@ -41,18 +50,18 @@ h6 {
   padding: 0;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
+  font-family: var(--font-default);
 }
 
 p {
   font-size: var(--font-size-default);
-  font-family: var(--font-default);
   font-weight: var(--font-weight-default);
-  color: var(--text-color);
 }
 
 h2 {
-  font-family: var(--font-default);
-  font-size: var(--font-size-subtitle);
+  font-weight: var(--font-weight-subtitle);
+  font-size: calc(var(--font-size-subtitle));
 }
 
 .drag-window.dragging .title-bar {
@@ -63,31 +72,13 @@ h2 {
 }
 
 .dot-bg {
-  width: 100vw;
-  height: 100vh;
   background-color: var(--background-color);
-
-  background-image:
-    radial-gradient(circle, var(--text-color) 1px, transparent 1px),
-    radial-gradient(circle, var(--text-color) 1px, transparent 1px);
-
-  background-size:
-    6px 6px,
-    6px 6px;
-  background-position:
-    0 0,
-    3px 3px;
+  background-image: url('/src/assets/dot-bg.png');
+  background-size: 6px 6px; /* or whatever size matches your SVG */
   background-repeat: repeat;
+  background-position: 0 0;
 }
-.dot-bg::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(circle, var(--text-color) 1px, transparent 1px);
-  background-size: 6px 6px;
-  pointer-events: none;
-  z-index: -1;
+
+img {
+  user-select: none;
 }

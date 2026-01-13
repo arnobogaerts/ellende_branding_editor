@@ -54,8 +54,8 @@ export const draggable: Directive<HTMLElement> = {
       if (!dragging) return;
 
       const parentRect = parent.getBoundingClientRect();
-      const newX = Math.max(0, e.clientX - parentRect.left - offsetX);
-      const newY = Math.max(0, e.clientY - parentRect.top - offsetY);
+      const newX = e.clientX - parentRect.left - offsetX;
+      const newY = e.clientY - parentRect.top - offsetY;
 
       el.style.left = `${newX}px`;
       el.style.top = `${newY}px`;

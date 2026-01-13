@@ -1,5 +1,9 @@
 <template>
-    <button class="standard-button"><p class="selected"><slot></slot></p></button>
+  <button class="standard-button">
+    <p class="selected">
+      <slot></slot>
+    </p>
+  </button>
 </template>
 
 <style scoped>
@@ -11,9 +15,11 @@
   margin: 0;
   padding: var(--padding-default);
 }
+
 .standard-button:hover {
   cursor: var(--cursor-pointer);
 }
+
 .selected {
   border: 2px solid var(--text-color);
   padding: 0 5px;

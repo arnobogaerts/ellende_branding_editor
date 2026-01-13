@@ -4,5 +4,5 @@ import ImageViewer from './templates/ImageViewer.vue';
 </script>
 
 <template>
-  <ImageViewer image="/public/images/ellende_logo_old.png" width="400px" />
+  <ImageViewer image="/public/images/photo_shoot_01.png" width="300px" padding="0" :color="false" />
 </template>

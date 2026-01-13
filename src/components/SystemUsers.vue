@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue';
-import TitleBar from './TitleBar.vue';
-import BlinkingText from './BlinkingText.vue';
+import TitleBar from './templates/TitleBar.vue';
+import BlinkingText from './templates/BlinkingText.vue';
 
 const containerRef = ref<HTMLElement | null>(null);
 const profilesRef = ref<HTMLElement | null>(null);
@@ -19,7 +19,9 @@ onMounted(async () => {
     <TitleBar>System Users</TitleBar>
     <div class="container" ref="containerRef">
       <div class="field">
-        <p>get &lt;artist&gt;*<BlinkingText /></p>
+        <p>get &lt;artist&gt;*
+          <BlinkingText>_</BlinkingText>
+        </p>
       </div>
       <div class="field profiles" ref="profilesRef">
         <p class="profile">[profile]&lt;artist&gt;Berlinde Deman & Mirko Banovic</p>
@@ -43,28 +45,35 @@ onMounted(async () => {
 .container {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
+  width: fit-content;
 }
+
 .field {
   border-bottom: var(--border-size-default) solid var(--text-color);
   box-sizing: border-box;
   padding: var(--padding-default);
 }
+
 .profiles {
   width: fit-content;
   white-space: nowrap;
 }
+
 .profile:hover {
   background-color: var(--text-color);
   color: var(--background-color);
   cursor: var(--cursor-pointer);
 }
+
 .profile.active {
   background-color: var(--text-color);
   color: var(--background-color);
 }
+
 .information {
   border-bottom: none;
 }
+
 .information-text {
   padding-left: calc(var(--font-size-default) * 2);
   font-style: italic;
