@@ -1,8 +1,8 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Image Viewer</TitleBar>
     <div class="container">
-      <img :src="imageSource" :style="{ width: imageWidth, padding: containerPadding }" :class="{ color: color }" />
+      <img :src="imageSource" :style="{ width: imageWidth, padding: containerPadding }" />
     </div>
   </div>
 </template>
@@ -14,12 +14,11 @@ const props = defineProps<{
   image?: string
   width?: string
   padding?: string
-  color?: boolean
 }>()
 
 const imageSource = props.image || '/public/images/ellende_logo.png'
 const imageWidth = props.width || '150px'
-const containerPadding = props.padding || '10px'
+const containerPadding = props.padding || '5px'
 </script>
 
 <style scoped>
@@ -32,10 +31,7 @@ const containerPadding = props.padding || '10px'
 
 img {
   display: block;
-}
-
-.color {
-  filter: grayscale(1);
-  image-rendering: pixelated;
+  filter: grayscale(2);
+  filter: invert(1);
 }
 </style>

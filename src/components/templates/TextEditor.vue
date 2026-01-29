@@ -1,16 +1,16 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Text Editor</TitleBar>
     <div class="note-title">
-      <p><b>{{ displayTitle }}.txt</b></p>
+      <div class="editable-text-area editable-text-area-title" contenteditable>Title.txt</div>
     </div>
     <div class="container" :style="{ width }">
-      <p ref="noteRef">
-        <slot name="text">{{ displayText }}</slot>
-      </p>
-      <BlinkingText>
-        <p>_</p>
-      </BlinkingText>
+      <span>
+        <div ref="textareaRef" contenteditable @input="onInput" class="editable-text-area"></div>
+        <BlinkingText>
+          <p>_</p>
+        </BlinkingText>
+      </span>
     </div>
     <div class="note-information">
       <p class="character-count">{{ wordCount }} words</p>
@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import TitleBar from './TitleBar.vue';
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import BlinkingText from './BlinkingText.vue';
 
 const props = defineProps<{
@@ -29,29 +29,26 @@ const props = defineProps<{
   width?: string
 }>()
 
-const displayTitle = props.title || 'Title'
-const displayText = props.text || 'Content'
+const textareaRef = ref<HTMLElement | null>(null);
+const text = ref(props.text || '');
 
-const noteRef = ref<HTMLElement | null>(null);
-const wordCount = ref(0);
-
-onMounted(() => {
-  if (!noteRef.value) return;
-
-  const text = noteRef.value.textContent?.trim() ?? '';
-
-  wordCount.value = text === '' ? 0 : text.split(/\s+/).length;
+const wordCount = computed(() => {
+  const t = text.value.trim();
+  return t === '' ? 0 : t.split(/\s+/).length;
 });
+
+function onInput(e: Event) {
+  text.value = (e.target as HTMLElement).innerText;
+}
 </script>
 
 <style scoped>
 .container {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
-  width: fit-content;
   box-sizing: border-box;
   padding: var(--padding-default);
-  min-width: 200px;
+  width: fit-content;
 }
 
 .note-title {

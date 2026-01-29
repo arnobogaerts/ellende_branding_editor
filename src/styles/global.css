@@ -7,8 +7,9 @@
   --font-size-subtitle: calc(var(--font-size-default) * 1.618);
   --font-weight-subtitle: bold;
 
-  --text-color: #111111;
-  --background-color: #fefdf9;
+  --text-color: #fefdf9;
+  --text-color-high-contrast: #ffff00;
+  --background-color: #111111;
   --background-color-alt: #e1e1e1;
 
   --border-size-default: 3px;
@@ -30,6 +31,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   cursor: var(--cursor-default);
+  background-color: var(--background-color);
 }
 
 hr.horizontal {
@@ -45,16 +47,16 @@ h2,
 h3,
 h4,
 h5,
-h6 {
+h6, .editable-text-area {
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--text-color);
+  color: var(--text-color-high-contrast);
   font-family: var(--font-default);
 }
 
-p {
+p, .editable-text-area {
   font-size: var(--font-size-default);
   font-weight: var(--font-weight-default);
 }
@@ -64,16 +66,38 @@ h2 {
   font-size: calc(var(--font-size-subtitle));
 }
 
-.drag-window.dragging .title-bar {
+textarea:focus {
+  outline: none;
+  caret-color: transparent;
+}
+.editable-text-area-title {
+  font-weight: var(--font-weight-subtitle);
+  height: var(--font-size-default) !important;
+}
+.editable-text-area {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  outline: none;
+  min-height: var(--font-size-default);
+  border: none;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  line-height: var(--font-size-default);
+  min-width: 200px;
+  max-width: 300px;;
+}
+
+.drag-window { position: absolute; }
+.drag-window.active .title-bar {
   background-color: var(--text-color);
 }
-.drag-window.dragging .title-bar p {
+.drag-window.active .title-bar p {
   color: var(--background-color);
 }
 
 .dot-bg {
   background-color: var(--background-color);
-  background-image: url('/src/assets/dot-bg.png');
   background-size: 6px 6px; /* or whatever size matches your SVG */
   background-repeat: repeat;
   background-position: 0 0;

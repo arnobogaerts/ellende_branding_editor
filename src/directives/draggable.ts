@@ -1,75 +1,101 @@
 import type { Directive } from 'vue';
 import { nextTick } from 'vue';
 
-let globalZIndex = 1000;
-let activeDraggable: HTMLElement | null = null;
+let activeWindow: HTMLElement | null = null;
+const positions = new WeakMap<HTMLElement, { left: string; top: string }>();
+let highestZIndex = 1000; // Starting z-index
 
-export const draggable: Directive<HTMLElement> = {
-  async mounted(el) {
+export const draggable: Directive<HTMLElement, string> = {
+  async mounted(el, binding) {
     await nextTick();
-
-    const parent = el.parentElement;
+    const parent = el.offsetParent as HTMLElement | null;
     if (!parent) return;
+
+    const handle = el.querySelector<HTMLElement>(binding.value);
+    if (!handle) {
+      console.warn('v-draggable: handle not found:', binding.value);
+      return;
+    }
 
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
 
     el.style.position = 'absolute';
-    el.style.cursor = 'var(--cursor-grab)';
-    el.style.touchAction = 'none';
-    el.style.userSelect = 'none';
 
-    const allChildren = Array.from(el.querySelectorAll('*')) as HTMLElement[];
+    // Initialize z-index
+    if (!el.style.zIndex) {
+      el.style.zIndex = String(highestZIndex++);
+    }
 
-    const setDraggingState = (state: boolean) => {
-      dragging = state;
-      if (state) {
-        if (activeDraggable && activeDraggable !== el) {
-          activeDraggable.classList.remove('dragging');
-        }
-        el.classList.add('dragging');
-        activeDraggable = el;
-      } else {
-        el.style.cursor = 'var(--cursor-grab)';
+    const savedPos = positions.get(el);
+    if (savedPos) {
+      el.style.left = savedPos.left;
+      el.style.top = savedPos.top;
+    } else if (!el.style.left && !el.style.top) {
+      const rect = el.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      el.style.left = `${rect.left - parentRect.left}px`;
+      el.style.top = `${rect.top - parentRect.top}px`;
+      positions.set(el, { left: el.style.left, top: el.style.top });
+    }
+
+    handle.style.cursor = 'grab';
+    handle.style.userSelect = 'none';
+    handle.style.touchAction = 'none';
+
+    const setActiveWindow = () => {
+      if (activeWindow && activeWindow !== el) {
+        activeWindow.classList.remove('active');
       }
+      activeWindow = el;
+      el.classList.add('active');
+
+      // Bring to front by setting highest z-index
+      el.style.zIndex = String(++highestZIndex);
+    };
+
+    // Click anywhere in window to activate
+    const onWindowClick = () => {
+      setActiveWindow();
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      setDraggingState(true);
+      if (e.button !== 0) return;
+      if (e.target !== handle && !handle.contains(e.target as Node)) return;
+
+      dragging = true;
+      el.classList.add('dragging');
+      setActiveWindow();
 
       const rect = el.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
-      allChildren.forEach((child) => (child.style.pointerEvents = 'none'));
-
-      el.setPointerCapture(e.pointerId);
-      el.style.cursor = 'var(--cursor-grab)';
-      globalZIndex += 1;
-      el.style.zIndex = String(globalZIndex);
+      handle.setPointerCapture(e.pointerId);
+      handle.style.cursor = 'grabbing';
     };
 
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
 
       const parentRect = parent.getBoundingClientRect();
-      const newX = e.clientX - parentRect.left - offsetX;
-      const newY = e.clientY - parentRect.top - offsetY;
-
-      el.style.left = `${newX}px`;
-      el.style.top = `${newY}px`;
+      el.style.left = `${e.clientX - parentRect.left - offsetX}px`;
+      el.style.top = `${e.clientY - parentRect.top - offsetY}px`;
+      positions.set(el, { left: el.style.left, top: el.style.top });
     };
 
     const onPointerUp = (e: PointerEvent) => {
       dragging = false;
-      allChildren.forEach((child) => (child.style.pointerEvents = 'auto'));
-      el.releasePointerCapture(e.pointerId);
-      el.style.cursor = 'var(--cursor-grab)';
+      el.classList.remove('dragging');
+      handle.releasePointerCapture(e.pointerId);
+      handle.style.cursor = 'grab';
     };
 
-    el.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    // Add click listener to entire window
+    el.addEventListener('mousedown', onWindowClick);
+    handle.addEventListener('pointerdown', onPointerDown);
+    handle.addEventListener('pointermove', onPointerMove);
+    handle.addEventListener('pointerup', onPointerUp);
   },
 };

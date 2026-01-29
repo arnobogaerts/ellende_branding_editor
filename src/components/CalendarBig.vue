@@ -25,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   height: 40px;
-  width: calc(7 * 40px + 6 * var(--border-size-default) + 4px);
+  width: calc(7 * 40px + 6 * var(--border-size-default) + 6px);
 }
 
 .days {
@@ -62,7 +62,7 @@ interface Day {
 
 const year = 2026;
 const month = 1;
-const highlightDay = 15;
+const highlightDay = 22;
 
 const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
 const firstWeekday = new Date(year, month, 1).getDay();

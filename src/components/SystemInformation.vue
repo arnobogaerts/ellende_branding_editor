@@ -1,9 +1,9 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>System Information</TitleBar>
     <div class="container">
       <div class="information">
-        <p><b>EllendeOS 1.0.5</b></p>
+        <p><b>EllendeOS 1.0.0</b></p>
         <p>Build Identifier: EL-12.24</p>
         <p>Memory: 128 KB</p>
         <p>Storage: 2.5 MB</p>

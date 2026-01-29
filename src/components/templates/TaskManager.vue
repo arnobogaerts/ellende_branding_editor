@@ -1,5 +1,5 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Task Manager</TitleBar>
 
     <div class="container">
