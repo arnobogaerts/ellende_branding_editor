@@ -1,7 +1,7 @@
 <template>
-  <div class="container" v-draggable>
-    <h2>FEB</h2>
-    <h2>15</h2>
+  <div class="container drag-window" v-draggable>
+    <h2>{{ month }}</h2>
+    <h2>{{ day }}</h2>
   </div>
 </template>
 
@@ -17,3 +17,16 @@
   align-items: center;
 }
 </style>
+
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    month?: string
+    day?: number
+  }>(),
+  {
+    month: 'FEB',
+    day: 22,
+  }
+)
+</script>

@@ -17,7 +17,7 @@
 }
 
 .standard-button:hover {
-  cursor: var(--cursor-pointer);
+  cursor: var(--cursor-select) !important;
 }
 
 .selected {

@@ -9,7 +9,6 @@
         <li v-for="(task, index) in tasks" :key="index">
           <p>
             {{ statusSymbol(task.status) }} {{ task.text }}
-            <!-- Only append blinking cursor to the last task -->
             <BlinkingText v-if="index === tasks.length - 1">
               <p>_</p>
             </BlinkingText>
@@ -61,11 +60,10 @@ function statusSymbol(status: Task['status']) {
 .container {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
-  width: fit-content;
   box-sizing: border-box;
   padding: 15px;
-  min-width: 200px;
-  max-width: 300px;
+  width: fit-content;
+  white-space: nowrap;
 }
 
 .task-list {

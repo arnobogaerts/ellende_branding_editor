@@ -3,14 +3,14 @@
     <TitleBar>System Information</TitleBar>
     <div class="container">
       <div class="information">
-        <p><b>EllendeOS 1.0.0</b></p>
-        <p>Build Identifier: EL-12.24</p>
-        <p>Memory: 128 KB</p>
-        <p>Storage: 2.5 MB</p>
-        <p>Network: 2.94 Mbps</p>
+        <p><b>----- Ellende OS 1.1 -----</b></p>
+        <p>Nodename: leuven-3000-be</p>
+        <p>Kernel: 14.12.24-el-smp</p>
+        <p>Uptime: {{ uptime }}</p>
+        <p>inet6 addr: 3000::be/64 Scope:Global</p>
       </div>
       <div class="copyright">
-        <p>© 2024-2026 Ellende. All rights reserved.</p>
+        <p>© 2024-{{ currentYear }} Ellende. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -18,6 +18,38 @@
 
 <script setup lang="ts">
 import TitleBar from './templates/TitleBar.vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const currentYear = new Date().getFullYear();
+
+const startDate = new Date('2024-12-14T23:00:00');
+const now = ref(new Date());
+
+const uptime = computed(() => {
+  const diffMs = now.value.getTime() - startDate.getTime();
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const totalDays = Math.floor(totalHours / 24);
+
+  const hh = (totalHours % 24).toString().padStart(2, '0');
+  const mm = (totalMinutes % 60).toString().padStart(2, '0');
+  const ss = (totalSeconds % 60).toString().padStart(2, '0');
+
+  return `${totalDays} days, ${hh}:${mm}:${ss}`;
+});
+
+let timer: ReturnType<typeof setInterval>;
+onMounted(() => {
+  timer = setInterval(() => {
+    now.value = new Date();
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(timer);
+});
 </script>
 
 <style scoped>

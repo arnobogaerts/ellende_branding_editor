@@ -56,6 +56,7 @@ function onInput(e: Event) {
   border: var(--border-size-default) solid var(--text-color);
   border-bottom: none;
   padding: var(--padding-default);
+  white-space: nowrap;
 }
 
 .note-information {
@@ -63,5 +64,6 @@ function onInput(e: Event) {
   border: var(--border-size-default) solid var(--text-color);
   border-top: none;
   padding: var(--padding-default);
+  white-space: nowrap;
 }
 </style>

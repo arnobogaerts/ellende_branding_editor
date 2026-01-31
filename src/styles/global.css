@@ -8,17 +8,21 @@
   --font-weight-subtitle: bold;
 
   --text-color: #fefdf9;
-  --text-color-high-contrast: #ffff00;
+  /*--text-color-high-contrast: #ffff00;*/
+
+  --text-color-high-contrast: #fefdf9;
+  --link-color-high-contrast: #00FF00;
   --background-color: #111111;
   --background-color-alt: #e1e1e1;
 
-  --border-size-default: 3px;
-  --border-size-thin: 2px;
+  --border-size-default: 2px;
+  --border-size-thin: 1px;
   --padding-default: 2px 5px;
 
-  --cursor-default: url('cursors/normal.cur'), auto;
-  --cursor-grab: url('cursors/precise.cur'), auto;
-  --cursor-pointer: url('cursors/secondary.cur'), auto;
+  --cursor-pointer: url('cursors/retro_90s/pointer.cur'), auto;
+  --cursor-grab: url('cursors/retro_90s/move.cur'), auto;
+  --cursor-select: url('cursors/retro_90s/select.cur'), auto;
+  --cursor-text: url('cursors/retro_90s/text.cur'), auto;
 }
 
 html,
@@ -30,7 +34,7 @@ body {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  cursor: var(--cursor-default);
+  cursor: var(--cursor-pointer);
   background-color: var(--background-color);
 }
 
@@ -40,6 +44,8 @@ hr.horizontal {
   border: none;
   background-color: var(--text-color);
 }
+
+*
 
 p,
 h1,
@@ -84,8 +90,10 @@ textarea:focus {
   padding: 0;
   resize: none;
   line-height: var(--font-size-default);
-  min-width: 200px;
-  max-width: 300px;;
+  width: 250px;
+}
+.editable-text-area:hover {
+  cursor: var(--cursor-text);
 }
 
 .drag-window { position: absolute; }
@@ -95,14 +103,30 @@ textarea:focus {
 .drag-window.active .title-bar p {
   color: var(--background-color);
 }
+.grab, .grabbing {
+  cursor: var(--cursor-grab) !important;
+}
+.drag-window.dragging,
+.drag-window.dragging * {
+  cursor: var(--cursor-grab) !important;
+}
 
 .dot-bg {
   background-color: var(--background-color);
-  background-size: 6px 6px; /* or whatever size matches your SVG */
+
+  background-image:
+    radial-gradient(circle, var(--text-color) 0.7px, transparent 0.7px),
+    radial-gradient(circle, var(--text-color) 0.7px, transparent 0.7px);
+
+  background-size: 6px 6px;
+  background-position:
+    0 0,
+    3px 3px;
+
   background-repeat: repeat;
-  background-position: 0 0;
 }
 
 img {
   user-select: none;
+  pointer-events: none;
 }

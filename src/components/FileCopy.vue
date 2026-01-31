@@ -1,5 +1,5 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>File Copy</TitleBar>
     <div class="container">
       <p>Copying upcoming events to disk...</p>

@@ -28,7 +28,8 @@
 
 .column {
   padding: var(--padding-default);
-  min-width: fit-content;
+  width: fit-content;
+  white-space: nowrap;
 }
 
 .column:first-child,

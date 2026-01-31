@@ -54,5 +54,6 @@ const ClockSrc = computed(() => {
 .container img {
   height: 100px;
   width: 100px;
+  filter: invert(2);
 }
 </style>

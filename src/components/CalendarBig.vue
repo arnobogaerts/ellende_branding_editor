@@ -1,5 +1,5 @@
 <template>
-  <div class="drag-window" v-draggable>
+  <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Calendar</TitleBar>
     <div class="month">
       <p>FEB</p>
@@ -25,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   height: 40px;
-  width: calc(7 * 40px + 6 * var(--border-size-default) + 6px);
+  width: calc(7 * 40px + 5 * var(--border-size-default) + 6px);
 }
 
 .days {

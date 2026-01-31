@@ -1,6 +1,8 @@
 <template>
-  <div class="title title-bar">
-    <p><slot></slot></p>
+  <div class="title title-bar glow">
+    <p>
+      <slot></slot>
+    </p>
   </div>
 </template>
 

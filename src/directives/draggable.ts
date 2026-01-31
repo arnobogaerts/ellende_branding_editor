@@ -11,7 +11,7 @@ export const draggable: Directive<HTMLElement, string> = {
     const parent = el.offsetParent as HTMLElement | null;
     if (!parent) return;
 
-    const handle = el.querySelector<HTMLElement>(binding.value);
+    const handle = binding.value ? el.querySelector<HTMLElement>(binding.value) : el;
     if (!handle) {
       console.warn('v-draggable: handle not found:', binding.value);
       return;
@@ -23,7 +23,6 @@ export const draggable: Directive<HTMLElement, string> = {
 
     el.style.position = 'absolute';
 
-    // Initialize z-index
     if (!el.style.zIndex) {
       el.style.zIndex = String(highestZIndex++);
     }
@@ -40,7 +39,7 @@ export const draggable: Directive<HTMLElement, string> = {
       positions.set(el, { left: el.style.left, top: el.style.top });
     }
 
-    handle.style.cursor = 'grab';
+    handle.classList.add('grab');
     handle.style.userSelect = 'none';
     handle.style.touchAction = 'none';
 
@@ -51,11 +50,9 @@ export const draggable: Directive<HTMLElement, string> = {
       activeWindow = el;
       el.classList.add('active');
 
-      // Bring to front by setting highest z-index
       el.style.zIndex = String(++highestZIndex);
     };
 
-    // Click anywhere in window to activate
     const onWindowClick = () => {
       setActiveWindow();
     };
@@ -68,31 +65,66 @@ export const draggable: Directive<HTMLElement, string> = {
       el.classList.add('dragging');
       setActiveWindow();
 
+      handle.style.cursor = 'var(--cursor-grab)';
+      document.body.style.cursor = 'var(--cursor-grab)';
+
       const rect = el.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
       handle.setPointerCapture(e.pointerId);
-      handle.style.cursor = 'grabbing';
+
+      handle.classList.remove('grab');
+      handle.classList.add('grabbing');
     };
+
+    function clamp(value: number, min: number, max: number) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    const SAFE_MARGIN_WIDTH = 10;
+    const SAFE_MARGIN_HEIGHT = 30;
 
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
 
       const parentRect = parent.getBoundingClientRect();
-      el.style.left = `${e.clientX - parentRect.left - offsetX}px`;
-      el.style.top = `${e.clientY - parentRect.top - offsetY}px`;
-      positions.set(el, { left: el.style.left, top: el.style.top });
+      const elRect = el.getBoundingClientRect();
+
+      // proposed new position
+      let nextLeft = e.clientX - parentRect.left - offsetX;
+      let nextTop = e.clientY - parentRect.top - offsetY;
+
+      // max positions, reduced by safe margin
+      const maxLeft = parentRect.width - elRect.width - SAFE_MARGIN_WIDTH;
+      const maxTop = parentRect.height - elRect.height - SAFE_MARGIN_HEIGHT;
+
+      // clamp positions inside safe margin
+      nextLeft = clamp(nextLeft, SAFE_MARGIN_WIDTH, maxLeft);
+      nextTop = clamp(nextTop, SAFE_MARGIN_HEIGHT, maxTop);
+
+      el.style.left = `${nextLeft}px`;
+      el.style.top = `${nextTop}px`;
+
+      positions.set(el, {
+        left: el.style.left,
+        top: el.style.top,
+      });
     };
 
     const onPointerUp = (e: PointerEvent) => {
+      if (!dragging) return;
+
       dragging = false;
       el.classList.remove('dragging');
       handle.releasePointerCapture(e.pointerId);
-      handle.style.cursor = 'grab';
+      handle.classList.remove('grabbing');
+      handle.classList.add('grab');
+
+      handle.style.cursor = '';
+      document.body.style.cursor = '';
     };
 
-    // Add click listener to entire window
     el.addEventListener('mousedown', onWindowClick);
     handle.addEventListener('pointerdown', onPointerDown);
     handle.addEventListener('pointermove', onPointerMove);
