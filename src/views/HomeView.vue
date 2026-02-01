@@ -4,7 +4,6 @@
       <div class="test-container" ref="containerRef">
         <component v-for="(item, index) in positionedComponents" :is="item.component" :key="index" v-bind="item.props"
           :style="{ position: 'absolute', left: item.initialLeft + 'px', top: item.initialTop + 'px' }" />
-        <!-- REMOVED :style="item.style" -->
       </div>
     </InstagramSingle>
   </MainContainer>
@@ -15,9 +14,8 @@ import { ref, onMounted, shallowRef, nextTick } from 'vue';
 import type { Component } from 'vue';
 import MainContainer from '@/components/MainContainer.vue'
 import InstagramSingle from '@/view_templates/instagram_templates/InstagramSingle.vue'
-import TaskManager from '@/components/templates/TaskManager.vue';
-import CalendarBig from '@/components/CalendarBig.vue';
 import TextEditor from '@/components/templates/TextEditor.vue';
+import CalendarBig from '@/components/CalendarBig.vue';
 import CalendarIcon from '@/components/CalendarIcon.vue';
 
 const containerRef = ref<HTMLElement | null>(null);
@@ -30,18 +28,13 @@ const components: PositionedComponent[] = [
     component: CalendarIcon
   },
   {
-    component: TextEditor
+    component: TextEditor,
+    props: {
+      textEditorSize: 'subtitle'
+    }
   },
   {
-    component: TaskManager,
-    props: {
-      title: "Villa",
-      tasks: [
-        { text: 'Send mails to artists', status: 'completed' },
-        { text: 'Send mail to mijnLeuven', status: 'completed' },
-        { text: 'Arrange scenography', status: 'pending' }
-      ]
-    }
+    component: TextEditor,
   }
 ];
 

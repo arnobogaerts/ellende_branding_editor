@@ -5,11 +5,11 @@
   --font-size-default: 12pt;
   --font-weight-default: 400;
   --font-size-subtitle: calc(var(--font-size-default) * 1.618);
+  --font-size-title: calc(((var(--font-size-default)) * 1.618) * 2);
   --font-weight-subtitle: bold;
 
   --text-color: #fefdf9;
   /*--text-color-high-contrast: #ffff00;*/
-
   --text-color-high-contrast: #fefdf9;
   --link-color-high-contrast: #00FF00;
   --background-color: #111111;
@@ -62,7 +62,7 @@ h6, .editable-text-area {
   font-family: var(--font-default);
 }
 
-p, .editable-text-area {
+p {
   font-size: var(--font-size-default);
   font-weight: var(--font-weight-default);
 }
@@ -76,24 +76,34 @@ textarea:focus {
   outline: none;
   caret-color: transparent;
 }
-.editable-text-area-title {
-  font-weight: var(--font-weight-subtitle);
-  height: var(--font-size-default) !important;
-}
 .editable-text-area {
   white-space: pre-wrap;
   word-wrap: break-word;
   outline: none;
-  min-height: var(--font-size-default);
   border: none;
   margin: 0;
   padding: 0;
   resize: none;
-  line-height: var(--font-size-default);
   width: 250px;
 }
 .editable-text-area:hover {
   cursor: var(--cursor-text);
+}
+.text-editor-default {
+  min-height: var(--font-size-default);
+  line-height: var(--font-size-default);
+}
+.text-editor-subtitle {
+  font-size: var(--font-size-subtitle);
+  min-height: var(--font-size-subtitle);
+  line-height: var(--font-size-subtitle);
+  font-weight: var(--font-weight-subtitle);
+}
+.text-editor-title {
+  font-size: var(--font-size-title);
+  min-height: var(--font-size-title);
+  line-height: var(--font-size-title);
+  font-weight: var(--font-weight-title);
 }
 
 .drag-window { position: absolute; }

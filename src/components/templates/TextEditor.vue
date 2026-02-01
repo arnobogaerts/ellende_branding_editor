@@ -2,11 +2,16 @@
   <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Text Editor</TitleBar>
     <div class="note-title">
-      <div class="editable-text-area editable-text-area-title" contenteditable>Title.txt</div>
+      <div class="editable-text-area text-editor-window-title" contenteditable>{{ windowTitle }}</div>
     </div>
     <div class="container" :style="{ width }">
       <span>
-        <div ref="textareaRef" contenteditable @input="onInput" class="editable-text-area"></div>
+        <div ref="textareaRef" contenteditable @input="onInput" class="editable-text-area" :class="{
+          'text-editor-default': textEditorSize === 'default',
+          'text-editor-subtitle': textEditorSize === 'subtitle',
+          'text-editor-title': textEditorSize === 'title'
+        }">
+        </div>
         <BlinkingText>
           <p>_</p>
         </BlinkingText>
@@ -23,11 +28,31 @@ import TitleBar from './TitleBar.vue';
 import { ref, computed } from 'vue';
 import BlinkingText from './BlinkingText.vue';
 
-const props = defineProps<{
-  title?: string
-  text?: string
-  width?: string
-}>()
+
+const props = withDefaults(
+  defineProps<{
+    title?: string
+    text?: string
+    width?: string
+    textEditorSize?: string
+    windowTitle?: string
+  }>(), {
+  textEditorSize: 'default',
+}
+)
+
+let windowTitle = props.windowTitle
+
+switch (props.textEditorSize) {
+  case 'subtitle':
+    windowTitle = 'Subtitle.txt';
+    break;
+  case 'title':
+    windowTitle = 'Title.txt';
+    break;
+  default:
+    windowTitle = 'Note.txt';
+}
 
 const textareaRef = ref<HTMLElement | null>(null);
 const text = ref(props.text || '');
@@ -57,6 +82,7 @@ function onInput(e: Event) {
   border-bottom: none;
   padding: var(--padding-default);
   white-space: nowrap;
+  font-weight: var(--font-weight-subtitle);
 }
 
 .note-information {

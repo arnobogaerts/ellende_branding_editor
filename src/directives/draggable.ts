@@ -3,8 +3,7 @@ import { nextTick } from 'vue';
 
 let activeWindow: HTMLElement | null = null;
 const positions = new WeakMap<HTMLElement, { left: string; top: string }>();
-let highestZIndex = 1000; // Starting z-index
-
+let highestZIndex = 1000;
 export const draggable: Directive<HTMLElement, string> = {
   async mounted(el, binding) {
     await nextTick();
@@ -98,7 +97,6 @@ export const draggable: Directive<HTMLElement, string> = {
       // max positions, reduced by safe margin
       const maxLeft = parentRect.width - elRect.width - SAFE_MARGIN_WIDTH;
       const maxTop = parentRect.height - elRect.height - SAFE_MARGIN_HEIGHT;
-
       // clamp positions inside safe margin
       nextLeft = clamp(nextLeft, SAFE_MARGIN_WIDTH, maxLeft);
       nextTop = clamp(nextTop, SAFE_MARGIN_HEIGHT, maxTop);

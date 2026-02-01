@@ -1,7 +1,14 @@
 <template>
   <div class="drag-window">
-    <TitleBar>Instagram {{ aspectRatio }}</TitleBar>
+    <TitleBar>
+      <StandardSelect v-model="aspectRatio" :options="[
+        { value: '9/16', label: '9:16 Ratio' },
+        { value: '3/4', label: '3:4 Ratio' },
+        { value: '1/1', label: '1:1 Ratio' }
+      ]" />
+    </TitleBar>
     <div class="border-container">
+      <div v-if="aspectRatio === '9/16'" class="aspect-guide"></div>
       <div class="container dot-bg" ref="animatedRef" :style="{ aspectRatio: aspectRatio }">
         <div class="container-background dot-bg"></div>
         <canvas ref="glitchCanvas" class="glitch-overlay"></canvas>
@@ -21,12 +28,27 @@
   border: var(--border-size-default) solid var(--text-color);
 }
 
+.aspect-guide {
+  z-index: 9999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: greenyellow;
+  opacity: 0.25;
+  pointer-events: none;
+  box-sizing: border-box;
+  aspect-ratio: 3 / 4;
+  width: calc(75vh * 9 /16);
+}
+
 .container {
   height: 75vh;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
   background-color: var(--background-color);
+  border-radius: var(--crt-radius);
 }
 
 .glitch-overlay {
@@ -41,10 +63,11 @@
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import domtoimage from 'dom-to-image-more';
 import StandardButton from '@/components/StandardButton.vue';
 import TitleBar from '@/components/templates/TitleBar.vue';
+import StandardSelect from '@/components/StandardSelect.vue';
 
 // ─── Refs ───────────────────────────────────────────────────────────────────
 
@@ -53,13 +76,19 @@ const glitchCanvas = ref<HTMLCanvasElement | null>(null);
 const isRecording = ref(false);
 const fontReady = ref(false);
 
+// ─── Props ──────────────────────────────────────────────────────────────────
+
+const aspectRatio = ref<string>('9/16')
+
+watch(aspectRatio, () => {
+  applyCrtBorders();
+});
+
 // ─── State ──────────────────────────────────────────────────────────────────
 
 let animationId: number | null = null;
 let recorder: MediaRecorder | null = null;
 let running = false;
-
-const aspectRatio = '9/16';
 
 const glitchConfig = {
   pixelSize: 0,
@@ -76,6 +105,14 @@ const glitchConfig = {
   colorCorruptionAmount: 1,
 };
 
+function getTargetHeight(aspectRatio: string | undefined) {
+  switch (aspectRatio) {
+    case '3/4': return 1440;
+    case '9/16':
+    default: return 1920;
+  }
+}
+
 // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
 onMounted(async () => {
@@ -85,6 +122,7 @@ onMounted(async () => {
     console.warn('Font failed to load, proceeding with fallback.');
   } finally {
     fontReady.value = true;
+    applyCrtBorders();
     startLivePreview();
   }
 });
@@ -133,7 +171,9 @@ async function startRecording() {
   let previousFrame: ImageData | null = null;
 
   const rect = element.getBoundingClientRect();
-  const targetHeight = 1920;
+
+  const targetHeight = getTargetHeight(aspectRatio.value);
+
   const scale = targetHeight / rect.height;
 
   // Canvas setup
@@ -266,7 +306,7 @@ async function startRecording() {
           // CRT post-processing
           applyVignette(finalCtx, finalCanvas.width, finalCanvas.height);
           applyScanlines(finalCtx, finalCanvas.width, finalCanvas.height);
-          applyBarrelDistortion(finalCtx, finalCanvas.width, finalCanvas.height, 0.03);
+          applyBarrelDistortion(finalCtx, finalCanvas.width, finalCanvas.height, 0.015);
 
           resolve(true);
         };
@@ -290,6 +330,15 @@ function stopRecording() {
 }
 
 // ─── Effects ────────────────────────────────────────────────────────────────
+
+function applyCrtBorders() {
+  const element = animatedRef.value;
+  if (!element) return;
+  const targetHeight = getTargetHeight(aspectRatio.value);
+  const CRT_RADIUS_FACTOR = 0.005;
+  const crtRadiusPx = Math.round(targetHeight * CRT_RADIUS_FACTOR);
+  element.style.setProperty('--crt-radius', `${crtRadiusPx}px`);
+}
 
 function runRgbSplit(imageData: ImageData, scale: number): ImageData {
   const { width, height, data } = imageData;
