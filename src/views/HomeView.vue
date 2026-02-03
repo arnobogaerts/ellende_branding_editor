@@ -1,92 +1,157 @@
 <template>
   <MainContainer>
-    <InstagramSingle>
-      <div class="test-container" ref="containerRef">
-        <component v-for="(item, index) in positionedComponents" :is="item.component" :key="index" v-bind="item.props"
-          :style="{ position: 'absolute', left: item.initialLeft + 'px', top: item.initialTop + 'px' }" />
+    <InstagramSingle @randomize="handleRandomize">
+      <div class="components-container" ref="containerRef">
+        <component v-for="item in positionedComponents" :key="item.id" :is="item.component" v-bind="item.props"
+          v-model="item.props!.modelValue" @update:modelValue="saveCurrentLayout" @drag-end="saveCurrentLayout"
+          class="drag-window" />
       </div>
     </InstagramSingle>
   </MainContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, shallowRef, nextTick } from 'vue';
+//# region ────────────────────────────────────────────────── IMPORTS
+import { ref, onMounted, nextTick } from 'vue';
 import type { Component } from 'vue';
 import MainContainer from '@/components/MainContainer.vue'
 import InstagramSingle from '@/view_templates/instagram_templates/InstagramSingle.vue'
 import TextEditor from '@/components/templates/TextEditor.vue';
 import CalendarBig from '@/components/CalendarBig.vue';
 import CalendarIcon from '@/components/CalendarIcon.vue';
+import { randomizePositions } from '@/directives/layout';
+//#endregion ────────────────────────────────────────────────
 
+//# region ────────────────────────────────────────────────── TYPES & CONFIGURATION
 const containerRef = ref<HTMLElement | null>(null);
 
-const components: PositionedComponent[] = [
-  {
-    component: CalendarBig
-  },
-  {
-    component: CalendarIcon
-  },
-  {
-    component: TextEditor,
-    props: {
-      textEditorSize: 'subtitle'
-    }
-  },
-  {
-    component: TextEditor,
-  }
-];
-
 interface PositionedComponent {
+  id: string; // Removed '?' to fix index type errors
   component: Component;
-  initialLeft?: number;
-  initialTop?: number;
-  props?: Record<string, unknown>;
+  props?: Record<string, any>;
+  content?: string;
 }
 
-const positionedComponents = shallowRef<PositionedComponent[]>([]);
+const defaultComponents: PositionedComponent[] = [
+  { component: CalendarBig } as any,
+  { component: CalendarIcon } as any,
+  {
+    component: TextEditor,
+    props: { textEditorSize: 'subtitle' },
+    content: ''
+  } as any,
+  {
+    component: TextEditor,
+    props: {},
+    content: ''
+  } as any
+];
 
+const positionedComponents = ref<PositionedComponent[]>([]);
+//#endregion ────────────────────────────────────────────────
+
+//# region ────────────────────────────────────────────────── PERSISTENCE LOGIC
+const saveCurrentLayout = () => {
+  if (!containerRef.value) return;
+  const dataToSave: Record<string, any> = {};
+  const windows = containerRef.value.querySelectorAll<HTMLElement>('.drag-window');
+
+  windows.forEach((win, index) => {
+    const comp = positionedComponents.value[index];
+    if (!comp || !comp.id) return;
+
+    dataToSave[comp.id] = {
+      left: win.style.left,
+      top: win.style.top,
+      content: comp.props?.modelValue
+    };
+  });
+
+  localStorage.setItem('instagram_layout_data', JSON.stringify(dataToSave));
+};
+
+const applySavedPositions = (savedData: Record<string, any>) => {
+  if (!containerRef.value) return;
+  const windows = containerRef.value.querySelectorAll<HTMLElement>('.drag-window');
+
+  windows.forEach((win, index) => {
+    const comp = positionedComponents.value[index];
+    if (!comp || !comp.id) return;
+
+    const saved = savedData[comp.id];
+    if (saved) {
+      win.style.left = saved.left;
+      win.style.top = saved.top;
+    }
+  });
+};
+//#endregion ────────────────────────────────────────────────
+
+//# region ────────────────────────────────────────────────── ACTIONS
+const handleRandomize = () => {
+  localStorage.removeItem('instagram_layout_data');
+
+  positionedComponents.value = defaultComponents.map((c, index) => {
+    const autoId = `${(c.component as any).__name || 'comp'}-${index}`;
+
+    return {
+      ...c,
+      id: autoId,
+      // Create a BRAND NEW props object to break any links to old data
+      props: {
+        ...JSON.parse(JSON.stringify(c.props || {})),
+        modelValue: c.content // This is the hardcoded 'Subtitle' / 'Main Text'
+      }
+    };
+  });
+
+  nextTick(() => {
+    if (containerRef.value) {
+      randomizePositions(containerRef.value);
+      setTimeout(() => {
+        saveCurrentLayout();
+      }, 100);
+    }
+  });
+};
+//#endregion ────────────────────────────────────────────────
+
+//# region ────────────────────────────────────────────────── LIFECYCLE
 onMounted(async () => {
-  const container = containerRef.value;
-  if (!container) return;
+  const rawData = localStorage.getItem('instagram_layout_data');
+  const savedData = rawData ? JSON.parse(rawData) : {};
 
-  positionedComponents.value = components.map(c => ({
-    component: c.component,
-    props: c.props,
-  }));
+  positionedComponents.value = defaultComponents.map((c, index) => {
+    const autoId = `${(c.component as any).__name || 'comp'}-${index}`;
+
+    const saved = savedData[autoId] || {};
+    return {
+      ...c,
+      id: autoId,
+      props: {
+        ...c.props,
+        modelValue: saved.content !== undefined ? saved.content : c.content
+      }
+    }
+  });
 
   await nextTick();
-
-  const windows = container.querySelectorAll<HTMLElement>('.drag-window');
-
-  const SAFE_MARGIN_WIDTH = 10;
-  const SAFE_MARGIN_HEIGHT = 30;
-
-  windows.forEach((win, i) => {
-    const comp = positionedComponents.value[i];
-    if (!comp) return;
-
-    const elWidth = win.offsetWidth;
-    const elHeight = win.offsetHeight;
-
-    const maxLeft = container.clientWidth - elWidth - SAFE_MARGIN_WIDTH;
-    const maxTop = container.clientHeight - elHeight - SAFE_MARGIN_HEIGHT;
-
-    const left = SAFE_MARGIN_WIDTH + Math.floor(Math.random() * Math.max(0, maxLeft - SAFE_MARGIN_WIDTH));
-    const top = SAFE_MARGIN_HEIGHT + Math.floor(Math.random() * Math.max(0, maxTop - SAFE_MARGIN_HEIGHT));
-
-    comp.initialLeft = left;
-    comp.initialTop = top;
-
-    win.style.left = `${left}px`;
-    win.style.top = `${top}px`;
-  });
+  setTimeout(() => {
+    if (Object.keys(savedData).length === 0) {
+      if (containerRef.value) {
+        randomizePositions(containerRef.value);
+        saveCurrentLayout();
+      }
+    } else {
+      applySavedPositions(savedData);
+    }
+  }, 60);
 });
+//#endregion ────────────────────────────────────────────────
 </script>
 
 <style scoped>
-.test-container {
+.components-container {
   position: relative;
   width: 100%;
   height: 100%;

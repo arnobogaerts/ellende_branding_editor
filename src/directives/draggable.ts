@@ -1,12 +1,15 @@
 import type { Directive } from 'vue';
 import { nextTick } from 'vue';
+import { SAFE_MARGINS } from '@/directives/layout';
 
 let activeWindow: HTMLElement | null = null;
 const positions = new WeakMap<HTMLElement, { left: string; top: string }>();
 let highestZIndex = 1000;
+
 export const draggable: Directive<HTMLElement, string> = {
   async mounted(el, binding) {
     await nextTick();
+
     const parent = el.offsetParent as HTMLElement | null;
     if (!parent) return;
 
@@ -30,11 +33,7 @@ export const draggable: Directive<HTMLElement, string> = {
     if (savedPos) {
       el.style.left = savedPos.left;
       el.style.top = savedPos.top;
-    } else if (!el.style.left && !el.style.top) {
-      const rect = el.getBoundingClientRect();
-      const parentRect = parent.getBoundingClientRect();
-      el.style.left = `${rect.left - parentRect.left}px`;
-      el.style.top = `${rect.top - parentRect.top}px`;
+    } else {
       positions.set(el, { left: el.style.left, top: el.style.top });
     }
 
@@ -48,12 +47,7 @@ export const draggable: Directive<HTMLElement, string> = {
       }
       activeWindow = el;
       el.classList.add('active');
-
       el.style.zIndex = String(++highestZIndex);
-    };
-
-    const onWindowClick = () => {
-      setActiveWindow();
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -64,15 +58,11 @@ export const draggable: Directive<HTMLElement, string> = {
       el.classList.add('dragging');
       setActiveWindow();
 
-      handle.style.cursor = 'var(--cursor-grab)';
-      document.body.style.cursor = 'var(--cursor-grab)';
-
       const rect = el.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
       handle.setPointerCapture(e.pointerId);
-
       handle.classList.remove('grab');
       handle.classList.add('grabbing');
     };
@@ -81,25 +71,20 @@ export const draggable: Directive<HTMLElement, string> = {
       return Math.min(Math.max(value, min), max);
     }
 
-    const SAFE_MARGIN_WIDTH = 10;
-    const SAFE_MARGIN_HEIGHT = 30;
-
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
 
       const parentRect = parent.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
 
-      // proposed new position
       let nextLeft = e.clientX - parentRect.left - offsetX;
       let nextTop = e.clientY - parentRect.top - offsetY;
 
-      // max positions, reduced by safe margin
-      const maxLeft = parentRect.width - elRect.width - SAFE_MARGIN_WIDTH;
-      const maxTop = parentRect.height - elRect.height - SAFE_MARGIN_HEIGHT;
-      // clamp positions inside safe margin
-      nextLeft = clamp(nextLeft, SAFE_MARGIN_WIDTH, maxLeft);
-      nextTop = clamp(nextTop, SAFE_MARGIN_HEIGHT, maxTop);
+      const maxLeft = parentRect.width - elRect.width - SAFE_MARGINS.WIDTH;
+      const maxTop = parentRect.height - elRect.height - SAFE_MARGINS.HEIGHT;
+
+      nextLeft = clamp(nextLeft, SAFE_MARGINS.WIDTH, maxLeft);
+      nextTop = clamp(nextTop, SAFE_MARGINS.HEIGHT, maxTop);
 
       el.style.left = `${nextLeft}px`;
       el.style.top = `${nextTop}px`;
@@ -112,18 +97,15 @@ export const draggable: Directive<HTMLElement, string> = {
 
     const onPointerUp = (e: PointerEvent) => {
       if (!dragging) return;
-
       dragging = false;
       el.classList.remove('dragging');
       handle.releasePointerCapture(e.pointerId);
       handle.classList.remove('grabbing');
       handle.classList.add('grab');
-
-      handle.style.cursor = '';
-      document.body.style.cursor = '';
+      el.dispatchEvent(new CustomEvent('drag-end'));
     };
 
-    el.addEventListener('mousedown', onWindowClick);
+    el.addEventListener('mousedown', setActiveWindow);
     handle.addEventListener('pointerdown', onPointerDown);
     handle.addEventListener('pointermove', onPointerMove);
     handle.addEventListener('pointerup', onPointerUp);

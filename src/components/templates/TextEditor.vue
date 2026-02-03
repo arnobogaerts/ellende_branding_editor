@@ -25,45 +25,55 @@
 
 <script setup lang="ts">
 import TitleBar from './TitleBar.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue'; // Added onMounted, watch
 import BlinkingText from './BlinkingText.vue';
-
 
 const props = withDefaults(
   defineProps<{
+    modelValue?: string
     title?: string
     text?: string
     width?: string
     textEditorSize?: string
     windowTitle?: string
   }>(), {
+  modelValue: '',
   textEditorSize: 'default',
 }
 )
 
 let windowTitle = props.windowTitle
-
 switch (props.textEditorSize) {
-  case 'subtitle':
-    windowTitle = 'Subtitle.txt';
-    break;
-  case 'title':
-    windowTitle = 'Title.txt';
-    break;
-  default:
-    windowTitle = 'Note.txt';
+  case 'subtitle': windowTitle = 'Subtitle.txt'; break;
+  case 'title': windowTitle = 'Title.txt'; break;
+  default: windowTitle = 'Note.txt';
 }
 
+const emit = defineEmits(['update:modelValue']);
 const textareaRef = ref<HTMLElement | null>(null);
-const text = ref(props.text || '');
+
+onMounted(() => {
+  if (textareaRef.value) {
+    textareaRef.value.innerText = props.modelValue || props.text || '';
+  }
+});
+
+watch(() => props.modelValue, (newVal) => {
+  if (textareaRef.value) {
+    if (textareaRef.value.innerText !== newVal) {
+      textareaRef.value.innerText = newVal || '';
+    }
+  }
+});
 
 const wordCount = computed(() => {
-  const t = text.value.trim();
+  const t = (props.modelValue || '').trim();
   return t === '' ? 0 : t.split(/\s+/).length;
 });
 
 function onInput(e: Event) {
-  text.value = (e.target as HTMLElement).innerText;
+  const content = (e.target as HTMLElement).innerText;
+  emit('update:modelValue', content);
 }
 </script>
 

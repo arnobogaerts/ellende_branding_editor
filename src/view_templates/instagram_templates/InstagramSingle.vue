@@ -1,29 +1,45 @@
 <template>
-  <div class="drag-window">
-    <TitleBar>
-      <StandardSelect v-model="aspectRatio" :options="[
-        { value: '9/16', label: '9:16 Ratio' },
-        { value: '3/4', label: '3:4 Ratio' },
-        { value: '1/1', label: '1:1 Ratio' }
-      ]" />
-    </TitleBar>
-    <div class="border-container">
-      <div v-if="aspectRatio === '9/16'" class="aspect-guide"></div>
-      <div class="container dot-bg" ref="animatedRef" :style="{ aspectRatio: aspectRatio }">
-        <div class="container-background dot-bg"></div>
-        <canvas ref="glitchCanvas" class="glitch-overlay"></canvas>
-        <slot></slot>
+  <div class="main-container">
+    <div class="drag-window">
+      <TitleBar>
+        <StandardSelect v-model="aspectRatio" :options="[
+          { value: '9/16', label: '9:16 Ratio' },
+          { value: '3/4', label: '3:4 Ratio' },
+          { value: '1/1', label: '1:1 Ratio' }
+        ]" />
+      </TitleBar>
+      <div class="border-container">
+        <div v-show="aspectRatio === '9/16' && !showAspectGuide" class="aspect-guide" ref="aspecGuideRef"></div>
+        <div class="container dot-bg" ref="animatedRef" :style="{ aspectRatio: aspectRatio }">
+          <div class="container-background dot-bg"></div>
+          <canvas ref="glitchCanvas" class="glitch-overlay"></canvas>
+          <slot></slot>
+        </div>
       </div>
     </div>
-    <br />
-    <StandardButton @click="isRecording ? stopRecording() : startRecording()" style="margin-left: -2px;"
-      :disabled="!fontReady">
-      {{ !fontReady ? 'Loading Fonts...' : isRecording ? 'Stop Recording' : 'Start Recording' }}
-    </StandardButton>
+    <div class="buttons-container">
+      <StandardButton @click="isRecording ? stopRecording() : startRecording()" style="margin-left: -2px;"
+        :disabled="!fontReady">
+        {{ !fontReady ? 'Loading Fonts...' : isRecording ? 'Stop Recording' : 'Start Recording' }}
+      </StandardButton>
+      <StandardButton @click="$emit('randomize')">
+        Reset
+      </StandardButton>
+      <StandardButton v-show="aspectRatio === '9/16'" @click="showHideAspectGuide()" :disabled="aspectRatio !== '9/16'">
+        Aspect Guide
+      </StandardButton>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
 .border-container {
   border: var(--border-size-default) solid var(--text-color);
 }
@@ -51,6 +67,12 @@
   border-radius: var(--crt-radius);
 }
 
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
 .glitch-overlay {
   position: absolute;
   top: 0;
@@ -63,48 +85,36 @@
 </style>
 
 <script setup lang="ts">
+//# region ────────────────────────────────────────────────── IMPORTS
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import domtoimage from 'dom-to-image-more';
 import StandardButton from '@/components/StandardButton.vue';
 import TitleBar from '@/components/templates/TitleBar.vue';
 import StandardSelect from '@/components/StandardSelect.vue';
+import { SAFE_MARGINS, randomizePositions } from '@/directives/layout';
+//#endregion ────────────────────────────────────────────────
 
-// ─── Refs ───────────────────────────────────────────────────────────────────
-
+//# region ────────────────────────────────────────────────── REACTIVE UI STATE
 const animatedRef = ref<HTMLElement | null>(null);
 const glitchCanvas = ref<HTMLCanvasElement | null>(null);
 const isRecording = ref(false);
 const fontReady = ref(false);
+const showAspectGuide = ref(true)
+//#endregion ────────────────────────────────────────────────
 
-// ─── Props ──────────────────────────────────────────────────────────────────
-
-const aspectRatio = ref<string>('9/16')
-
-watch(aspectRatio, () => {
-  applyCrtBorders();
-});
-
-// ─── State ──────────────────────────────────────────────────────────────────
-
+//# region ────────────────────────────────────────────────── INTERAL LOGIC STATE
 let animationId: number | null = null;
 let recorder: MediaRecorder | null = null;
 let running = false;
 
-const glitchConfig = {
-  pixelSize: 0,
-  pixelate: false,
-  grayScale: false,
-  rgbSeparation: true,
-  rgbOffsetR: { x: -1, y: 0 },
-  rgbOffsetG: { x: 0, y: 1 },
-  rgbOffsetB: { x: 0, y: 0 },
-  displacement: true,
-  displacementAmount: 50,
-  displacementFrequency: 0.2,
-  colorCorruption: false,
-  colorCorruptionAmount: 1,
-};
+// Displacement glitch timing
+let lastDecisionTime = 0;
+const CHECK_INTERVAL = 1000;
+let isCurrentlyGlitching = false;
+let glitchEndTime = 0;
+//#endregion ────────────────────────────────────────────────
 
+//# region ────────────────────────────────────────────────── UTILITIES
 function getTargetHeight(aspectRatio: string | undefined) {
   switch (aspectRatio) {
     case '3/4': return 1440;
@@ -113,8 +123,46 @@ function getTargetHeight(aspectRatio: string | undefined) {
   }
 }
 
-// ─── Lifecycle ──────────────────────────────────────────────────────────────
+function showHideAspectGuide() {
+  showAspectGuide.value = !showAspectGuide.value
+}
+//#endregion ────────────────────────────────────────────────
 
+//# region ────────────────────────────────────────────────── CONFIGURATION
+const glitchConfig = {
+  displacement: true,
+  displacementAmount: 50,
+  displacementFrequency: 0.2,
+
+  rgbOffset: true,
+  rgbOffsetR: { x: -1, y: 0 },
+  rgbOffsetG: { x: 0, y: 1 },
+  rgbOffsetB: { x: 0, y: 0 },
+
+  crtBorders: true,
+  crtBordersAmount: 0.005,
+
+  crtFlicker: true,
+  ctrFlickerFrequency: 0.08,
+  ctrFlickerDimness: 0.05,
+  ctrFlickerRandomize: 0.1,
+
+  grain: true,
+  grainAmount: 40,
+};
+//#endregion ────────────────────────────────────────────────
+
+//# region ────────────────────────────────────────────────── COMPONENT INTERFACE
+const safeMargins = {
+  x: SAFE_MARGINS.WIDTH,
+  y: SAFE_MARGINS.HEIGHT
+};
+
+defineExpose({ safeMargins });
+//#endregion ────────────────────────────────────────────────
+
+
+//# region ────────────────────────────────────────────────── LIFECYCLE & WATCHERS
 onMounted(async () => {
   try {
     await document.fonts.load('1em lores-12');
@@ -122,7 +170,6 @@ onMounted(async () => {
     console.warn('Font failed to load, proceeding with fallback.');
   } finally {
     fontReady.value = true;
-    applyCrtBorders();
     startLivePreview();
   }
 });
@@ -131,8 +178,16 @@ onUnmounted(() => {
   if (animationId) cancelAnimationFrame(animationId);
 });
 
-// ─── Live Preview ───────────────────────────────────────────────────────────
+const savedRatio = localStorage.getItem('instagram_aspect_ratio');
+const aspectRatio = ref<string>(savedRatio || '9/16');
+watch(aspectRatio, (newRatio) => {
+  localStorage.setItem('instagram_aspect_ratio', newRatio);
+  applyCrtBorders();
+});
+//#endregion ────────────────────────────────────────────────
 
+
+//# region ────────────────────────────────────────────────── LIVE PREVIEW
 function startLivePreview() {
   const canvas = glitchCanvas.value;
   const container = animatedRef.value;
@@ -158,9 +213,9 @@ function startLivePreview() {
 
   animate();
 }
+//#endregion ────────────────────────────────────────────────
 
-// ─── Recording ──────────────────────────────────────────────────────────────
-
+//# region ────────────────────────────────────────────────── RECORDING
 async function startRecording() {
   const element = animatedRef.value;
   if (!element || !fontReady.value) return;
@@ -176,13 +231,11 @@ async function startRecording() {
 
   const scale = targetHeight / rect.height;
 
-  // Canvas setup
   const finalCanvas = document.createElement('canvas');
   finalCanvas.width = rect.width * scale;
   finalCanvas.height = targetHeight;
   const finalCtx = finalCanvas.getContext('2d', { willReadFrequently: true })!;
 
-  // MediaRecorder setup
   const stream = finalCanvas.captureStream(15);
   recorder = new MediaRecorder(stream, {
     mimeType: 'video/webm;codecs=vp9',
@@ -202,12 +255,6 @@ async function startRecording() {
   };
 
   recorder.start();
-
-  // Displacement glitch timing
-  let lastDecisionTime = 0;
-  const CHECK_INTERVAL = 1000;
-  let isCurrentlyGlitching = false;
-  let glitchEndTime = 0;
 
   async function processFrame() {
     if (!running) return;
@@ -231,82 +278,25 @@ async function startRecording() {
         const img = new Image();
 
         img.onload = () => {
-          const now = Date.now();
 
           finalCtx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
           finalCtx.drawImage(img, 0, 0);
 
           // Phosphor trail
+          const PHOSPHOR_VALUE_ONE = 0.88
+          const PHOSPHOR_VALUE_TWO = 0.2
           if (previousFrame) {
             const current = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
             for (let i = 0; i < current.data.length; i += 4) {
-              current.data[i] = current.data[i] * 0.85 + previousFrame.data[i] * 0.15;
-              current.data[i + 1] = current.data[i + 1] * 0.85 + previousFrame.data[i + 1] * 0.15;
-              current.data[i + 2] = current.data[i + 2] * 0.85 + previousFrame.data[i + 2] * 0.15;
+              current.data[i] = current.data[i] * PHOSPHOR_VALUE_ONE + previousFrame.data[i] * PHOSPHOR_VALUE_TWO;
+              current.data[i + 1] = current.data[i + 1] * PHOSPHOR_VALUE_ONE + previousFrame.data[i + 1] * PHOSPHOR_VALUE_TWO;
+              current.data[i + 2] = current.data[i + 2] * PHOSPHOR_VALUE_ONE + previousFrame.data[i + 2] * PHOSPHOR_VALUE_TWO;
             }
             finalCtx.putImageData(current, 0, 0);
           }
           previousFrame = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
 
-          // RGB separation
-          if (glitchConfig.rgbSeparation) {
-            let imgData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
-            imgData = runRgbSplit(imgData, scale);
-            finalCtx.putImageData(imgData, 0, 0);
-          }
-
-          // Displacement glitch decision
-          if (now - lastDecisionTime > CHECK_INTERVAL) {
-            lastDecisionTime = now;
-            if (Math.random() < glitchConfig.displacementFrequency) {
-              isCurrentlyGlitching = true;
-              glitchEndTime = now + 125;
-            }
-          }
-
-          // Displacement glitch slices
-          if (glitchConfig.displacement && isCurrentlyGlitching) {
-            if (now > glitchEndTime) {
-              isCurrentlyGlitching = false;
-            } else {
-              const numSlices = Math.floor(Math.random() * 3) + 1;
-              for (let i = 0; i < numSlices; i++) {
-                const sliceH = Math.floor(Math.random() * 50 + 20) * scale;
-                const sliceY = Math.floor(Math.random() * (finalCanvas.height - sliceH));
-                const shiftX = Math.round((Math.random() - 0.5) * glitchConfig.displacementAmount);
-
-                finalCtx.drawImage(
-                  finalCanvas,
-                  0, sliceY, finalCanvas.width, sliceH,
-                  shiftX, sliceY, finalCanvas.width, sliceH
-                );
-              }
-            }
-          }
-
-          // Grain
-          {
-            const imageData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
-            for (let i = 0; i < imageData.data.length; i += 4) {
-              const rand = (Math.random() - 0.5) * 40;
-              imageData.data[i] += rand;
-              imageData.data[i + 1] += rand;
-              imageData.data[i + 2] += rand;
-            }
-            finalCtx.putImageData(imageData, 0, 0);
-          }
-
-          // CRT flicker
-          if (Math.random() < 0.08) {
-            const alpha = 0.05 + Math.random() * 0.1;
-            finalCtx.fillStyle = `rgba(0,0,0,${alpha})`;
-            finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-          }
-
-          // CRT post-processing
-          applyVignette(finalCtx, finalCanvas.width, finalCanvas.height);
-          applyScanlines(finalCtx, finalCanvas.width, finalCanvas.height);
-          applyBarrelDistortion(finalCtx, finalCanvas.width, finalCanvas.height, 0.015);
+          applyAllEffects(finalCtx, finalCanvas, scale);
 
           resolve(true);
         };
@@ -328,16 +318,20 @@ function stopRecording() {
   running = false;
   recorder?.stop();
 }
+//#endregion ────────────────────────────────────────────────
 
-// ─── Effects ────────────────────────────────────────────────────────────────
+//# region ────────────────────────────────────────────────── EFFECTS
+function applyAllEffects(targetCtx: CanvasRenderingContext2D, targetCanvas: HTMLCanvasElement, currentScale: number) {
+  const now = Date.now();
+  const { width, height } = targetCanvas;
 
-function applyCrtBorders() {
-  const element = animatedRef.value;
-  if (!element) return;
-  const targetHeight = getTargetHeight(aspectRatio.value);
-  const CRT_RADIUS_FACTOR = 0.005;
-  const crtRadiusPx = Math.round(targetHeight * CRT_RADIUS_FACTOR);
-  element.style.setProperty('--crt-radius', `${crtRadiusPx}px`);
+  applyRgbOffset(targetCtx, targetCanvas, currentScale);
+  applyDisplacement(now, currentScale, targetCtx, targetCanvas);
+  applyGrain(targetCtx, width, height);
+  applyCrtFlicker(targetCtx, width, height);
+  applyVignette(targetCtx, width, height);
+  applyScanlines(targetCtx, width, height);
+  applyBarrelDistortion(targetCtx, width, height, 0.015);
 }
 
 function runRgbSplit(imageData: ImageData, scale: number): ImageData {
@@ -371,6 +365,79 @@ function runRgbSplit(imageData: ImageData, scale: number): ImageData {
   }
 
   return new ImageData(out, width, height);
+}
+
+function applyRgbOffset(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scale: number) {
+  if (glitchConfig.rgbOffset) {
+    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    imgData = runRgbSplit(imgData, scale);
+    ctx.putImageData(imgData, 0, 0);
+  }
+}
+
+function applyDisplacement(now: number, scale: number, ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  if (now - lastDecisionTime > CHECK_INTERVAL) {
+    lastDecisionTime = now;
+    if (Math.random() < glitchConfig.displacementFrequency) {
+      isCurrentlyGlitching = true;
+      glitchEndTime = now + 125;
+    }
+  }
+
+  if (glitchConfig.displacement && isCurrentlyGlitching) {
+    if (now > glitchEndTime) {
+      isCurrentlyGlitching = false;
+    } else {
+      const numSlices = Math.floor(Math.random() * 3) + 1;
+      for (let i = 0; i < numSlices; i++) {
+        const sliceH = Math.floor(Math.random() * 50 + 20) * scale;
+        const sliceY = Math.floor(Math.random() * (canvas.height - sliceH));
+        const shiftX = Math.round((Math.random() - 0.5) * glitchConfig.displacementAmount);
+
+        ctx.drawImage(
+          canvas,
+          0, sliceY, canvas.width, sliceH,
+          shiftX, sliceY, canvas.width, sliceH
+        );
+      }
+    }
+  }
+}
+
+function applyGrain(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  if (glitchConfig.grain) {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const rand = (Math.random() - 0.5) * glitchConfig.grainAmount;
+      data[i] += rand;     // Red
+      data[i + 1] += rand; // Green
+      data[i + 2] += rand; // Blue
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+  }
+}
+
+function applyCrtFlicker(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  if (Math.random() < glitchConfig.ctrFlickerFrequency && glitchConfig.crtFlicker) {
+    const alpha = glitchConfig.ctrFlickerDimness + Math.random() * glitchConfig.ctrFlickerRandomize;
+    ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+    ctx.fillRect(0, 0, width, height);
+  }
+}
+
+function applyCrtBorders() {
+  if (glitchConfig.crtBorders) {
+    const element = animatedRef.value;
+    if (!element) return;
+    const targetHeight = getTargetHeight(aspectRatio.value);
+    const CRT_RADIUS_FACTOR = glitchConfig.crtBordersAmount;
+    const crtRadiusPx = Math.round(targetHeight * CRT_RADIUS_FACTOR);
+    element.style.setProperty('--crt-radius', `${crtRadiusPx}px`);
+  }
 }
 
 function applyBarrelDistortion(ctx: CanvasRenderingContext2D, width: number, height: number, strength: number) {
@@ -425,4 +492,5 @@ function applyScanlines(ctx: CanvasRenderingContext2D, width: number, height: nu
     ctx.fillRect(0, y, width, lineH);
   }
 }
+//#endregion ────────────────────────────────────────────────
 </script>

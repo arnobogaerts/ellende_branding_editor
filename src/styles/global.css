@@ -10,7 +10,7 @@
 
   --text-color: #fefdf9;
   /*--text-color-high-contrast: #ffff00;*/
-  --text-color-high-contrast: #fefdf9;
+  --text-color-high-contrast: #F8F8FF;
   --link-color-high-contrast: #00FF00;
   --background-color: #111111;
   --background-color-alt: #e1e1e1;
@@ -106,7 +106,6 @@ textarea:focus {
   font-weight: var(--font-weight-title);
 }
 
-.drag-window { position: absolute; }
 .drag-window.active .title-bar {
   background-color: var(--text-color);
 }
