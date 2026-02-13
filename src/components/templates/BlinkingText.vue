@@ -14,6 +14,7 @@ defineProps<{
 .blinking-text {
   display: inline-block;
   animation: blink-animation 1s steps(2, start) infinite;
+  pointer-events: none;
 }
 
 @keyframes blink-animation {

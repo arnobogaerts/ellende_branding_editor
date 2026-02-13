@@ -1,6 +1,6 @@
 <template>
   <div class="drag-window" v-draggable="'.title-bar'">
-    <TitleBar>Image Viewer</TitleBar>
+    <TitleBar>Image</TitleBar>
     <div class="container">
       <img :src="imageSource" :style="{ width: imageWidth, padding: containerPadding }" />
     </div>
@@ -10,11 +10,15 @@
 <script setup lang="ts">
 import TitleBar from './TitleBar.vue';
 
-const props = defineProps<{
-  image?: string
-  width?: string
-  padding?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    image?: string
+    width?: string
+    padding?: string
+  }>(), {
+  width: '125px',
+}
+)
 
 const imageSource = props.image || '/public/images/ellende_logo.png'
 const imageWidth = props.width || '150px'
@@ -31,7 +35,8 @@ const containerPadding = props.padding || '5px'
 
 img {
   display: block;
-  filter: grayscale(2);
-  filter: invert(1);
+  filter: grayscale(1);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 </style>

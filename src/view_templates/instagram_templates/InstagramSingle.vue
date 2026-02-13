@@ -3,9 +3,11 @@
     <div class="drag-window">
       <TitleBar>
         <StandardSelect v-model="aspectRatio" :options="[
-          { value: '9/16', label: '9:16 Ratio' },
+          { value: '9/16', label: 'Instagram Story' },
           { value: '3/4', label: '3:4 Ratio' },
-          { value: '1/1', label: '1:1 Ratio' }
+          { value: '4/5', label: 'Instagram Post' },
+          { value: '1/1', label: '1:1 Ratio' },
+          { value: '1748/2480', label: 'A5' }
         ]" />
       </TitleBar>
       <div class="border-container">
@@ -21,6 +23,9 @@
       <StandardButton @click="isRecording ? stopRecording() : startRecording()" style="margin-left: -2px;"
         :disabled="!fontReady">
         {{ !fontReady ? 'Loading Fonts...' : isRecording ? 'Stop Recording' : 'Start Recording' }}
+      </StandardButton>
+      <StandardButton @click="captureScreenshot()" :disabled="!fontReady">
+        Screenshot
       </StandardButton>
       <StandardButton @click="$emit('randomize')">
         Reset
@@ -91,7 +96,7 @@ import domtoimage from 'dom-to-image-more';
 import StandardButton from '@/components/StandardButton.vue';
 import TitleBar from '@/components/templates/TitleBar.vue';
 import StandardSelect from '@/components/StandardSelect.vue';
-import { SAFE_MARGINS, randomizePositions } from '@/directives/layout';
+import { SAFE_MARGINS } from '@/directives/layout';
 //#endregion ────────────────────────────────────────────────
 
 //# region ────────────────────────────────────────────────── REACTIVE UI STATE
@@ -118,7 +123,10 @@ let glitchEndTime = 0;
 function getTargetHeight(aspectRatio: string | undefined) {
   switch (aspectRatio) {
     case '3/4': return 1440;
-    case '9/16':
+    case '9/16': return 1920;
+    case '1/1': return 1080;
+    case '4/5': return 1350;
+    case '1748/2480': return 2480;
     default: return 1920;
   }
 }
@@ -140,7 +148,7 @@ const glitchConfig = {
   rgbOffsetB: { x: 0, y: 0 },
 
   crtBorders: true,
-  crtBordersAmount: 0.005,
+  crtBordersAmount: 0.01,
 
   crtFlicker: true,
   ctrFlickerFrequency: 0.08,
@@ -170,6 +178,7 @@ onMounted(async () => {
     console.warn('Font failed to load, proceeding with fallback.');
   } finally {
     fontReady.value = true;
+    applyCrtBorders();
     startLivePreview();
   }
 });
@@ -320,6 +329,53 @@ function stopRecording() {
 }
 //#endregion ────────────────────────────────────────────────
 
+//# region ────────────────────────────────────────────────── SCREENSHOT
+async function captureScreenshot() {
+  const element = animatedRef.value;
+  if (!element || !fontReady.value) return;
+
+  const rect = element.getBoundingClientRect();
+  const targetHeight = getTargetHeight(aspectRatio.value);
+  const scale = targetHeight / rect.height;
+
+  try {
+    // 1. Capture the DOM element as a PNG
+    const dataUrl = await domtoimage.toPng(element, {
+      width: rect.width * scale,
+      height: targetHeight,
+      style: {
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        width: rect.width + 'px',
+        height: rect.height + 'px',
+      },
+    });
+
+    // 2. Process through the effects pipeline
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = rect.width * scale;
+    tempCanvas.height = targetHeight;
+    const tempCtx = tempCanvas.getContext('2d')!;
+
+    const img = new Image();
+    img.onload = () => {
+      tempCtx.drawImage(img, 0, 0);
+
+      applyAllEffectsScreenshot(tempCtx, tempCanvas, scale);
+
+      // 3. Trigger Download
+      const link = document.createElement('a');
+      link.download = `glitch-capture-${Date.now()}.png`;
+      link.href = tempCanvas.toDataURL('image/png');
+      link.click();
+    };
+    img.src = dataUrl;
+  } catch (e) {
+    console.error('Screenshot failed', e);
+  }
+}
+//#endregion ────────────────────────────────────────────────
+
 //# region ────────────────────────────────────────────────── EFFECTS
 function applyAllEffects(targetCtx: CanvasRenderingContext2D, targetCanvas: HTMLCanvasElement, currentScale: number) {
   const now = Date.now();
@@ -331,7 +387,19 @@ function applyAllEffects(targetCtx: CanvasRenderingContext2D, targetCanvas: HTML
   applyCrtFlicker(targetCtx, width, height);
   applyVignette(targetCtx, width, height);
   applyScanlines(targetCtx, width, height);
-  applyBarrelDistortion(targetCtx, width, height, 0.015);
+  applyBarrelDistortion(targetCtx, width, height, 0.05);
+}
+
+function applyAllEffectsScreenshot(targetCtx: CanvasRenderingContext2D, targetCanvas: HTMLCanvasElement, currentScale: number) {
+  const now = Date.now();
+  const { width, height } = targetCanvas;
+
+  applyRgbOffset(targetCtx, targetCanvas, currentScale);
+  applyDisplacement(now, currentScale, targetCtx, targetCanvas);
+  applyGrain(targetCtx, width, height);
+  applyVignette(targetCtx, width, height);
+  applyScanlines(targetCtx, width, height);
+  applyBarrelDistortion(targetCtx, width, height, 0.05);
 }
 
 function runRgbSplit(imageData: ImageData, scale: number): ImageData {

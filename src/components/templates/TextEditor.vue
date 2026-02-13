@@ -2,15 +2,17 @@
   <div class="drag-window" v-draggable="'.title-bar'">
     <TitleBar>Text Editor</TitleBar>
     <div class="note-title">
-      <div class="editable-text-area text-editor-window-title" contenteditable>{{ windowTitle }}</div>
+      <div class="editable-text-area text-editor-window-title" contenteditable>{{ windowTitle
+        }}</div>
     </div>
     <div class="container" :style="{ width }">
       <span>
-        <div ref="textareaRef" contenteditable @input="onInput" class="editable-text-area" :class="{
-          'text-editor-default': textEditorSize === 'default',
-          'text-editor-subtitle': textEditorSize === 'subtitle',
-          'text-editor-title': textEditorSize === 'title'
-        }">
+        <div ref="textareaRef" contenteditable @input="onInput" @paste.prevent="onPaste" class="editable-text-area"
+          :class="{
+            'text-editor-default': textEditorSize === 'default',
+            'text-editor-subtitle': textEditorSize === 'subtitle',
+            'text-editor-title': textEditorSize === 'title'
+          }">
         </div>
         <BlinkingText>
           <p>_</p>
@@ -25,7 +27,7 @@
 
 <script setup lang="ts">
 import TitleBar from './TitleBar.vue';
-import { ref, computed, onMounted, watch } from 'vue'; // Added onMounted, watch
+import { ref, computed, onMounted, watch } from 'vue';
 import BlinkingText from './BlinkingText.vue';
 
 const props = withDefaults(
@@ -39,6 +41,7 @@ const props = withDefaults(
   }>(), {
   modelValue: '',
   textEditorSize: 'default',
+  width: '250px',
 }
 )
 
@@ -75,6 +78,13 @@ function onInput(e: Event) {
   const content = (e.target as HTMLElement).innerText;
   emit('update:modelValue', content);
 }
+
+function onPaste(e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text/plain') || '';
+  document.execCommand('insertText', false, text);
+  const content = (textareaRef.value as HTMLElement).innerText;
+  emit('update:modelValue', content);
+}
 </script>
 
 <style scoped>
@@ -101,5 +111,6 @@ function onInput(e: Event) {
   border-top: none;
   padding: var(--padding-default);
   white-space: nowrap;
+  padding-right: 20px;
 }
 </style>

@@ -5,8 +5,9 @@
   --font-size-default: 12pt;
   --font-weight-default: 400;
   --font-size-subtitle: calc(var(--font-size-default) * 1.618);
-  --font-size-title: calc(((var(--font-size-default)) * 1.618) * 2);
+  --font-size-title: calc(((var(--font-size-default)) * 1.618) * 1.5);
   --font-weight-subtitle: bold;
+  --font-weight-title: var(--font-weight-subtitle);
 
   --text-color: #fefdf9;
   /*--text-color-high-contrast: #ffff00;*/
@@ -80,11 +81,11 @@ textarea:focus {
   white-space: pre-wrap;
   word-wrap: break-word;
   outline: none;
-  border: none;
+  border: none;min-width: 25px;
   margin: 0;
   padding: 0;
   resize: none;
-  width: 250px;
+  width: fit-content;
 }
 .editable-text-area:hover {
   cursor: var(--cursor-text);

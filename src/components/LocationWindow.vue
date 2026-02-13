@@ -7,11 +7,7 @@
         <p>-</p>
       </div>
       <div class="column">
-        <p v-for="i in x" :key="i">Onze-Lieve-Vrouwstraat 46</p>
-        <p>-</p>
-      </div>
-      <div class="column">
-        <p v-for="i in x" :key="i">3000 Leuven</p>
+        <p v-for="i in x" :key="i">O.L.Vrouwstraat 46</p>
         <p>-</p>
       </div>
     </div>

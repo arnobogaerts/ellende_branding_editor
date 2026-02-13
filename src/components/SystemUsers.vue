@@ -6,6 +6,15 @@ import BlinkingText from './templates/BlinkingText.vue';
 const containerRef = ref<HTMLElement | null>(null);
 const profilesRef = ref<HTMLElement | null>(null);
 
+const props = withDefaults(
+  defineProps<{
+    width?: number
+  }>(),
+  {
+    width: 300
+  }
+)
+
 onMounted(async () => {
   await nextTick();
   if (containerRef.value && profilesRef.value) {
@@ -17,24 +26,25 @@ onMounted(async () => {
 <template>
   <div class="drag-window" v-draggable>
     <TitleBar>System Users</TitleBar>
-    <div class="container" ref="containerRef">
+    <div class="container" ref="containerRef" :style="{ width: props.width + 'px' }">
       <div class="field">
         <p>get &lt;artist&gt;*
           <BlinkingText>_</BlinkingText>
         </p>
       </div>
       <div class="field profiles" ref="profilesRef">
-        <p class="profile">[profile]&lt;artist&gt;Berlinde Deman & Mirko Banovic</p>
-        <p class="profile active">[profile]&lt;artist&gt;Natasha Pirard</p>
-        <p class="profile">[profile]&lt;artist&gt;Ellende Crew</p>
+        <p class="profile active">[profile]&lt;artist&gt;Berlinde Deman</p>
+        <p class="profile">[profile]&lt;artist&gt;Pastige</p>
+        <p class="profile">[profile]&lt;artist&gt;Echo/Dawn</p>
         <p>--------------------</p>
       </div>
       <div class="field information">
         <p><b>Information:</b></p>
         <p class="information-text">
-          “Natasha Pirard is a Belgian experimental electronic musician whose work blends analogue
-          synthesis, tape loops, acoustic instrumentation, and voice into intimate, slowly unfolding
-          compositions.”
+          “Berlinde Deman plays the serpent, a rare wind instrument from the sixteenth century, with a sound from a
+          world without electricity, without engines, and without constant stimuli, shaped by a different relationship
+          to silence and time. This historical sound material is not presented as a museum object, but brought into
+          dialogue with contemporary sounds and effects.”
         </p>
       </div>
     </div>
@@ -45,7 +55,6 @@ onMounted(async () => {
 .container {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
-  width: fit-content;
 }
 
 .field {
@@ -55,7 +64,6 @@ onMounted(async () => {
 }
 
 .profiles {
-  width: fit-content;
   white-space: nowrap;
 }
 
@@ -75,7 +83,6 @@ onMounted(async () => {
 }
 
 .information-text {
-  padding-left: calc(var(--font-size-default) * 2);
   font-style: italic;
 }
 </style>
