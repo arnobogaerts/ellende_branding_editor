@@ -33,18 +33,17 @@ onMounted(async () => {
         </p>
       </div>
       <div class="field profiles" ref="profilesRef">
-        <p class="profile active">[profile]&lt;artist&gt;Berlinde Deman</p>
-        <p class="profile">[profile]&lt;artist&gt;Pastige</p>
+        <p class="profile">[profile]&lt;artist&gt;Berlinde Deman</p>
+        <p class="profile active">[profile]&lt;artist&gt;Pastige</p>
         <p class="profile">[profile]&lt;artist&gt;Echo/Dawn</p>
         <p>--------------------</p>
       </div>
       <div class="field information">
         <p><b>Information:</b></p>
         <p class="information-text">
-          “Berlinde Deman plays the serpent, a rare wind instrument from the sixteenth century, with a sound from a
-          world without electricity, without engines, and without constant stimuli, shaped by a different relationship
-          to silence and time. This historical sound material is not presented as a museum object, but brought into
-          dialogue with contemporary sounds and effects.”
+          “pastige is a storyteller through sound, crafting spaces for introspection, expression and connection.
+          On his bimonthly GIMIC radioshow ‘slowing down and looking back’, he invites friends and fellow music lovers
+          to trace their personal journeys through deeply resonant tracks.”
         </p>
       </div>
     </div>

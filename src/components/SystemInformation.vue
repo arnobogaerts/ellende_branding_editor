@@ -56,7 +56,7 @@ onUnmounted(() => {
 .container {
   background-color: var(--background-color);
   border: var(--border-size-default) solid var(--text-color);
-  width: 350px;
+  width: 400px;
 }
 
 .information {

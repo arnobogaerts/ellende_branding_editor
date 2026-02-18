@@ -22,6 +22,8 @@ import { randomizePositions } from '@/directives/layout';
 import CalendarIcon from '@/components/CalendarIcon.vue';
 import CalendarBig from '@/components/CalendarBig.vue';
 import SystemUsers from '@/components/SystemUsers.vue';
+import LocationWindow from '@/components/LocationWindow.vue';
+import VIdeoViewer from '@/components/templates/VIdeoViewer.vue';
 //#endregion ────────────────────────────────────────────────
 
 //# region ────────────────────────────────────────────────── TYPES & CONFIGURATION
@@ -35,10 +37,11 @@ interface PositionedComponent {
 }
 
 const defaultComponents: PositionedComponent[] = [
+
   {
-    component: ImageViewer,
+    component: VIdeoViewer,
     props: {
-      image: '/public/images/berlinde.jpg',
+      video: '/public/videos/1.mov',
       width: '320px',
     },
   },
@@ -47,18 +50,6 @@ const defaultComponents: PositionedComponent[] = [
     props: {
       textEditorSize: 'subtitle',
     },
-  },
-  {
-    component: TextEditor,
-    props: {
-      textEditorSize: 'subtitle',
-    },
-  },
-  {
-    component: SystemUsers,
-    props: {
-      width: 350
-    }
   }
 ];
 

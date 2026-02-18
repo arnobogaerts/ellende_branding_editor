@@ -7,7 +7,8 @@
           { value: '3/4', label: '3:4 Ratio' },
           { value: '4/5', label: 'Instagram Post' },
           { value: '1/1', label: '1:1 Ratio' },
-          { value: '1748/2480', label: 'A5' }
+          { value: '1748/2480', label: 'A5' },
+          { value: '1920/1005', label: 'Facebook Event Banner' }
         ]" />
       </TitleBar>
       <div class="border-container">
@@ -127,6 +128,7 @@ function getTargetHeight(aspectRatio: string | undefined) {
     case '1/1': return 1080;
     case '4/5': return 1350;
     case '1748/2480': return 2480;
+    case '1920/1005': return 1005;
     default: return 1920;
   }
 }
@@ -291,6 +293,8 @@ async function startRecording() {
           finalCtx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
           finalCtx.drawImage(img, 0, 0);
 
+          drawVideoFrames(finalCtx, finalCanvas, element as HTMLElement, scale);
+
           // Phosphor trail
           const PHOSPHOR_VALUE_ONE = 0.88
           const PHOSPHOR_VALUE_TWO = 0.2
@@ -326,6 +330,24 @@ async function startRecording() {
 function stopRecording() {
   running = false;
   recorder?.stop();
+}
+
+function drawVideoFrames(finalCtx: CanvasRenderingContext2D, finalCanvas: HTMLCanvasElement, element: HTMLElement, scale: number) {
+  const videos = element.querySelectorAll<HTMLVideoElement>('video');
+  videos.forEach((video) => {
+    if (video.readyState < 2) return; // not ready
+
+    const videoRect = video.getBoundingClientRect();
+    const containerRect = element.getBoundingClientRect();
+
+    // Position relative to the container, scaled up
+    const x = (videoRect.left - containerRect.left) * scale;
+    const y = (videoRect.top - containerRect.top) * scale;
+    const w = videoRect.width * scale;
+    const h = videoRect.height * scale;
+
+    finalCtx.drawImage(video, x, y, w, h);
+  });
 }
 //#endregion ────────────────────────────────────────────────
 
